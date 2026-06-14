@@ -15,3 +15,10 @@ test.db
 .ctx/
 docs/Implementation docs/
 *.log
+.aidevops.json
+.beads/
+AGENTS.md
+migrations/
+schemas/
+seeds/
+todo/

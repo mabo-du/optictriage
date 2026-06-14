@@ -1,55 +1,79 @@
-# OpticTriage
+<div align="center">
+  
+# 🚁 OpticTriage
 
-OpticTriage is an advanced pre-processing and quality control pipeline for large-scale drone photogrammetry datasets. It filters out blurry, glary, or poorly-overlapped images, extracts EXIF/RTK telemetry, detects ArUco/ChArUco/ColorChecker targets, and exports instantly ready structures for Metashape, OpenDroneMap, and COLMAP.
+**Automated Diagnostic & Pre-Processing Pipeline for Drone Photogrammetry**
 
-## Installation
+[![PyPI version](https://img.shields.io/pypi/v/optictriage.svg?style=for-the-badge&color=blue)](https://pypi.org/project/optictriage/)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg?style=for-the-badge&logo=python)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/mabo-du/optictriage/release.yml?style=for-the-badge&logo=github)](https://github.com/mabo-du/optictriage/actions)
 
-### Dependencies
-OpticTriage relies on several system binaries which must be installed:
-- **ExifTool**: Required for writing corrected telemetry back into DJI files.
-- **libexiv2**: C++ library underneath pyexiv2 for fast EXIF extraction.
-- **libjpeg-turbo**: Required for PyTurboJPEG to extract embedded raw previews quickly.
+</div>
 
-Ensure these are accessible in your system `PATH`.
-If using the bundled version (via PyInstaller), the appropriate ExifTool binary is included in the `bin/` directory.
+OpticTriage is a lightweight, non-destructive diagnostic utility designed to pre-process large batches of field photographs (e.g., from drone surveys) before they enter computationally expensive Structure-from-Motion (SfM) pipelines like COLMAP, WebODM, or Agisoft Metashape. It automatically detects blurs, glare, overexposure, and duplicates, while standardizing EXIF telemetry and detecting physical targets.
 
-### Quick Start
-```bash
-# Clone the repository
-git clone https://github.com/your-org/optictriage.git
-cd optictriage
+---
 
-# Install dependencies (uv recommended)
-uv pip install -e .
+## ⚡ Architecture Pipeline
 
-# Run the app
-python src/optictriage/app.py
+```mermaid
+graph TD
+    A[Raw Imagery] --> B{Import Stage}
+    B -->|SHA-256 Dupes| B_Dup[Flagged]
+    B --> C(Exif & RTK Stage)
+    
+    C --> D(Quality Stage)
+    D -->|Multiprocess Blur/Glare| D_Eval{Thresholds Met?}
+    D_Eval -->|No| D_Flagged[Flagged]
+    D_Eval -->|Yes| E(Target Stage)
+    
+    E --> F[ArUco / ColorChecker Detection]
+    F --> G(Export Stage)
+    
+    G --> H1[(COLMAP db)]
+    G --> H2[WebODM gcp_list.txt]
+    G --> H3[Metashape script]
 ```
 
-## Workflow Tutorial
-1. **Import Stage**: Select your raw image directory and an output destination. OpticTriage utilizes SHA-256 chunked hashing to instantly flag duplicate files.
-2. **Metadata & RTK**: Scans DJI/Autel XMP payloads. Automatically corrects the `GPSAltitude` EXIF tag by utilizing RelativeAltitude + Base Station Elevation, directly rewriting the source file to prevent vertical bowing in SfM reconstructions. Flags any images with lost RTK Fixed states (Float/Single Point).
-3. **Quality Stage**: Assesses focus/blur via a Gridded Laplacian (top 5% sharpest patches), exposure clipping, and glare estimation via true HSI color conversion. Images falling below your thresholds are flagged.
-4. **Target Detection**: Runs a computer vision pipeline (LAB CLAHE equalisation, Bilateral Filtering) to locate ArUco, ChArUco, and ColorChecker targets. Corners are refined to subpixel precision (`cornerSubPix`) and serialized.
-5. **Export & Finalize**: Copies images non-destructively to `passed/` and `flagged/` folders. It generates a Python script to instantly spin up Agisoft Metashape, prepares `image_groups.txt` and `cameras.json` for ODM, and scaffolds `database.db` with an exact 64-byte OPENCV parameter blob for COLMAP.
+## 🚀 Installation
 
-## GPU Acceleration
-OpticTriage will probe your system on launch. If an Nvidia GPU with CUDA is detected (via OpenCV), it will engage a two-tier GPU path:
-- **Tier 1 (Compute Heavy)**: Grayscale/LAB conversion, Laplacian filters, and CLAHE.
-- **Tier 2 (Filtering)**: Bilateral Edge-Preserving noise reduction.
+### Standalone Executables
+No Python required! Download the pre-compiled, standalone executable for your operating system from the **[GitHub Releases](https://github.com/mabo-du/optictriage/releases)** page. 
 
-*Note: The first GPU call permanently reserves approximately 100MB of VRAM for the CUDA context. Please terminate OpticTriage before launching downstream pipelines like Metashape or COLMAP to fully release this VRAM back to your solver.*
+### Python Package (PyPI)
+For integration into your existing environment, install via pip:
+```bash
+pip install optictriage
+```
 
-## Hardware Guidance
+> [!TIP]
+> We recommend using `uv` for lightning-fast virtual environment scaffolding: `uv pip install optictriage`.
 
-**Minimum:**
-- CPU: Intel Core i7 / AMD Ryzen 7
-- RAM: 32 GB 
-- GPU: Nvidia RTX 3060
-- Storage: 1TB NVMe Gen3
+## 🛠️ Features at a Glance
 
-**Recommended:**
-- CPU: Intel Core i9 / AMD Ryzen 9
-- RAM: 64 GB
-- GPU: Nvidia RTX 4080 (Desktop or 150W+ Laptop Chassis. *Note: Thin laptop chassis variants running at 80W TGP will drastically underperform on CUDA pipelines*).
-- Storage: 2TB NVMe Gen4
+| Feature | Description |
+|---------|-------------|
+| 🔍 **Quality Screening** | Automatically flags blurry, glary, or overexposed imagery using adjustable OpenCV thresholds. |
+| ⏱️ **Hover-Duplicate Detection** | Uses perceptual hashing (dhash) to identify sequential near-duplicates caused by hovering drones. |
+| 🎨 **Color Normalization** | Automatically detects cv2.mcc ColorCheckers and computes CIE 2000 ΔE normalizations non-destructively. |
+| 🎯 **Target Subpixel Extraction** | Detects ArUco and ChArUco targets and refines corner coordinates to subpixel precision. |
+| 📤 **Zero-Friction SfM Export** | Directly exports seeded `database.db` for COLMAP, GCP manifests for ODM, and automation scripts for Agisoft Metashape. |
+| 🚀 **Multiprocessing Engine** | CPU-bound tasks dynamically scale across all available cores while strictly respecting RAM overhead limits. |
+
+## 💻 Hardware Guidance
+
+OpticTriage will seamlessly leverage a multi-core CPU pool for intensive I/O operations and image decoding. If an NVIDIA CUDA environment is detected by OpenCV, it will engage the GPU for CLAHE and bilateral filtering.
+
+> [!WARNING]
+> The initial CUDA call will reserve approximately 100MB of VRAM context. Ensure you terminate OpticTriage before launching VRAM-intensive downstream photogrammetry software.
+
+| Requirement | Minimum | Recommended |
+|-------------|---------|-------------|
+| **CPU** | Intel Core i7 / AMD Ryzen 7 | Intel Core i9 / AMD Ryzen 9 |
+| **RAM** | 32 GB | 64 GB |
+| **GPU** | Nvidia RTX 3060 | Nvidia RTX 4080 (150W+ TGP) |
+| **Storage** | 1TB NVMe Gen3 | 2TB NVMe Gen4 |
+
+## 📖 Documentation
+Please refer to the [User Guide](USER_GUIDE.md) for detailed workflow instructions, threshold configuration, and SfM integration steps.
