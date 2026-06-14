@@ -1,0 +1,17 @@
+.gitnexus
+build/
+dist/
+*.egg-info/
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+optictriage.db
+test.db
+.agents/
+.claude/
+.windsurf/
+.ctx/
+docs/Implementation docs/
+*.log

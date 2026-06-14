@@ -1,0 +1,12 @@
+Project: Photogrammetry-Pre-Processor
+Source: open_heritage_software_project_scopes.md — Project 20
+======================================================================
+
+CONTEXT:
+I am building a photogrammetry pre-processing utility for archaeologists and palaeontologists. I need research:
+
+──────────────────────────────────────────────────────────────────────
+
+RESEARCH PROMPT 3:
+
+**Image quality metrics for photogrammetry**: What image quality metrics are most relevant for photogrammetry input selection? Cover: blur/sharpness metrics (Laplacian variance, FFT-based), exposure analysis (histogram statistics), and overlap analysis (GPS-based coverage estimation for UAV datasets). What threshold values are commonly used?

@@ -1,0 +1,12 @@
+Project: Photogrammetry-Pre-Processor
+Source: open_heritage_software_project_scopes.md — Project 20
+======================================================================
+
+CONTEXT:
+I am building a photogrammetry pre-processing utility for archaeologists and palaeontologists. I need research:
+
+──────────────────────────────────────────────────────────────────────
+
+RESEARCH PROMPT 4:
+
+**EXIF metadata standards**: What EXIF and XMP metadata tags are most important for photogrammetry? What Python libraries read and write EXIF reliably across JPEG, TIFF, and RAW formats? What metadata does Metashape read automatically from EXIF? How is GPS altitude encoding handled (relative vs absolute)?

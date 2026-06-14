@@ -1,0 +1,61 @@
+Project: OpticTriage
+Source: Implementation Plan Synthesis — System Optimization Research
+======================================================================
+
+CONTEXT:
+I am building OpticTriage, a Python + PyQt6 + OpenCV desktop application
+that pre-processes thousands of field photographs (JPG, TIFF, RAW: CR2/NEF/ARW/DNG)
+before they enter photogrammetry pipelines (Agisoft Metashape, OpenDroneMap, COLMAP).
+The application performs blur detection (Laplacian variance on image grids), exposure
+analysis (luminance histogram clipping), veiling glare detection (HSI color space),
+ArUco/ChArUco marker detection (with CLAHE + bilateral filter preprocessing), and
+generates platform-specific export files. Performance with 1,000+ images on a
+field laptop is a critical requirement.
+
+──────────────────────────────────────────────────────────────────────
+
+RESEARCH PROMPT 8:
+
+**GPU acceleration and optimization strategies for OpenCV photogrammetry
+pre-processing pipelines**: I need practical, implementation-focused
+research covering:
+
+1. **OpenCV CUDA module capabilities**: What OpenCV 4.x functions used in
+   photogrammetry pre-processing have GPU-accelerated equivalents? Cover
+   specifically: `cv2.Laplacian`, `cv2.createCLAHE`, `cv2.cvtColor` (BGR→LAB,
+   BGR→HSV), `cv2.aruco.detectMarkers`, `cv2.cornerSubPix`, `cv2.bilateralFilter`,
+   `cv2.adaptiveThreshold`, and the `cv2.mcc` module. For each: is a CUDA
+   equivalent available, and what is the typical speedup vs CPU?
+
+2. **Batch processing optimization**: What is the fastest way to process 5,000+
+   images through a sequential OpenCV pipeline in Python? Compare:
+   - Single-threaded CPU with optimized numpy operations
+   - Python multiprocessing (ProcessPoolExecutor with shared memory)
+   - OpenCV CUDA with async host-to-device transfers
+   - OpenCV's Transparent API (UMat) for automatic GPU offloading
+   - Thread-parallel image decode + single-threaded OpenCV
+
+3. **Memory optimization for RAW datasets**: What strategies minimize RAM usage
+   when working with large RAW files? Cover:
+   - Extracting embedded JPEG previews via rawpy vs full demosaicing
+   - Memory-mapped file I/O for large batches
+   - Garbage collection patterns for long-running pipelines
+   - Lazy loading strategies (process-on-demand vs process-all-upfront)
+
+4. **Field laptop hardware recommendations**: What are the minimum and
+   recommended hardware specs for processing 5,000× 24MP images through an
+   OpenCV pipeline within 30 minutes? Consider CPU cores, RAM, GPU (integrated
+   vs discrete), and disk I/O (SSD vs HDD). Provide benchmarks from real
+   photogrammetry workflows if available.
+
+5. **COLMAP and OpenDroneMap GPU utilization**: How do COLMAP and ODM utilize
+   the GPU during feature extraction and matching? Understanding this helps
+   avoid resource contention when running optictriage as a pre-processor on the
+   same machine that will later run the SfM pipeline.
+
+6. **Profile-guided optimization**: What profiling tools and techniques are
+   most effective for identifying bottlenecks in a Python + OpenCV pipeline?
+   Cover: cProfile, line_profiler, memory_profiler, OpenCV's built-in
+   `cv2.getTickCount`/`cv2.getTickFrequency` timing, and NVIDIA Nsight for CUDA
+   profiling. What are common "surprise" bottlenecks (e.g., image decoding,
+   color space conversion, numpy array copies)?

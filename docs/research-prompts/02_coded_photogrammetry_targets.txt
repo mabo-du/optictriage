@@ -1,0 +1,12 @@
+Project: Photogrammetry-Pre-Processor
+Source: open_heritage_software_project_scopes.md — Project 20
+======================================================================
+
+CONTEXT:
+I am building a photogrammetry pre-processing utility for archaeologists and palaeontologists. I need research:
+
+──────────────────────────────────────────────────────────────────────
+
+RESEARCH PROMPT 2:
+
+**Coded photogrammetry targets**: What types of coded targets are used in archaeological photogrammetry? Cover: Agisoft Metashape circular coded targets, ArUco markers, ChArUco boards, and April Tags. For each: what is the detection algorithm, what OpenCV module handles it, and what output format does Metashape/ODM expect for target positions?

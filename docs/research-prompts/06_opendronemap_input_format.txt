@@ -1,0 +1,12 @@
+Project: Photogrammetry-Pre-Processor
+Source: open_heritage_software_project_scopes.md — Project 20
+======================================================================
+
+CONTEXT:
+I am building a photogrammetry pre-processing utility for archaeologists and palaeontologists. I need research:
+
+──────────────────────────────────────────────────────────────────────
+
+RESEARCH PROMPT 6:
+
+**OpenDroneMap input format**: What is the complete documented input specification for OpenDroneMap? What is the format of GCP files (.txt), camera calibration files, and image EXIF requirements for GPS-tagged UAV surveys?

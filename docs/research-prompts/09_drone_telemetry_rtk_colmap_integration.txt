@@ -1,0 +1,24 @@
+Project: OpticTriage
+Source: Implementation Plan Synthesis — Drone Telemetry & SfM Integration Research
+======================================================================
+
+CONTEXT:
+I am building OpticTriage, a Python + PyQt6 desktop application that pre-processes thousands of field photographs before they enter photogrammetry pipelines like COLMAP, OpenDroneMap, and Metashape. A critical feature in Phase 5 is handling complex Drone (UAV) metadata (especially from DJI and Autel models), performing GPS overlap analysis, and converting OpenCV camera intrinsics into exactly what COLMAP expects. Photogrammetry accuracy heavily depends on correct interpretation of EXIF/XMP namespaces (like DJI's `RelativeAltitude` and RTK flags) and precise matrix translations.
+
+──────────────────────────────────────────────────────────────────────
+
+RESEARCH PROMPT 9:
+
+**Advanced UAV Telemetry Parsing and SfM Integration constraints**: I need practical, implementation-focused research covering:
+
+1. **UAV/Drone XMP Namespaces (DJI & Autel)**: How do DJI and Autel drones embed altitude, gimbal, and RTK telemetry data? Detail the differences between standard EXIF `GPSAltitude` and custom XMP tags like `drone-dji:RelativeAltitude` or `drone-dji:AbsoluteAltitude`. How can Python (using pyexiv2 or ExifTool) reliably extract the *correct* altitude for photogrammetry when the standard EXIF is uncalibrated or conflicts with the XMP data?
+
+2. **RTK and PPK Accuracy Flags**: How is GNSS solution type (e.g., RTK Fixed, Float, Single) recorded in EXIF/XMP by modern survey drones (DJI Mavic 3 Enterprise, Phantom 4 RTK, Autel EVO II RTK)? Provide the exact tag names and expected string/integer values. How can a script parse this to warn users if their dataset lacks RTK precision?
+
+3. **Geospatial Overlap Analysis (2D Footprint Projection)**: Given a drone's GPS coordinate, altitude, camera FOV (calculated from focal length and sensor size), and gimbal pitch/roll/yaw (from XMP), what is the optimal algorithm in Python (e.g., using `Shapely` and `pyproj`) to project the camera's four corners onto the ground and calculate the intersection area (overlap) between consecutive photos? How can this be done performantly for thousands of images?
+
+4. **COLMAP Camera Model Integration**: COLMAP uses a half-integer pixel center convention `(0.5, 0.5)` for its principal point, whereas OpenCV uses `(0, 0)`. When generating a `database.db` and `cameras.txt` for COLMAP from extracted EXIF data or an OpenCV calibration matrix, exactly what mathematical shift must be applied to `cx` and `cy`? What happens to the reconstruction if this 0.5-pixel shift is omitted?
+
+5. **Direct SQLite Manipulation for COLMAP Database (`database.db`)**: Provide the exact binary BLOB format COLMAP expects for the `prior_focal_length` and `params` columns in the `cameras` table. How can Python's `sqlite3` module construct these numpy `float64` blobs correctly? Are there common endianness or struct packing pitfalls when generating a COLMAP database directly from Python without running the COLMAP executable?
+
+6. **Image Grouping for ODM/Metashape**: For multi-flight datasets using different cameras (or the same camera model with slightly different physical properties), how should `image_groups.txt` in OpenDroneMap be generated automatically? What EXIF combinations (Make, Model, Image Size, Focal Length) are standard industry practice for defining unique calibration groups?
